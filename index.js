@@ -7,7 +7,7 @@ var http = require('http'),
 
 var server = http.createServer(function(req, response) {
 
-	fs.readFile('index.html', 'utf-8', function (err, data) {
+	fs.readFile('index.html', 'utf-8', function (error, data) {
         response.writeHead(200, { 'Content-Type': 'text/html' });
 
         var chartData = [];
@@ -21,7 +21,7 @@ var server = http.createServer(function(req, response) {
 
 });
 
-server.listen(80);
+server.listen(8080);
 
 var client = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
