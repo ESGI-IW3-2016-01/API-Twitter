@@ -1,0 +1,25 @@
+{
+  "name": "twitterapitest",
+  "version": "1.0.0",
+  "description": "application de test pour node, mongo et l'api twitter",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "require": "^2.4.20",
+    "twitter": "^1.7.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ESGI-IW3-2016-01/API-Twitter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ESGI-IW3-2016-01/API-Twitter/issues"
+  },
+  "homepage": "https://github.com/ESGI-IW3-2016-01/API-Twitter#readme"
+}
