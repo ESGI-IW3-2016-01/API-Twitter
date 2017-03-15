@@ -1,5 +1,6 @@
 require('dotenv').config();
 var Twitter = require('twitter');
+var fs = require('fs');
 
 var client = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -8,9 +9,18 @@ var client = new Twitter({
     access_token_secret: process.env.TWITTER_TOKEN_SECRET
 });
 
-var params = {};
-client.get('search/tweets.json?q=porn', params, function (error, tweets, response) {
-    if (!error) {
-        console.log(tweets);
-    }
+var params = {
+    q: "%23PowerRangers",
+    count: 10
+};
+
+client.get('search/tweets.json', params, function (error, tweets, response) {
+    if (error) console.error(error);
+    console.log(tweets);
+
+    fs.writeFile('tweets.json', JSON.stringify(tweets, null, 4), function (err) {
+        if (err) throw err;
+        console.log('It\'s saved!');
+    });
+
 });
