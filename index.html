@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.bundle.min.js"></script>
+    <style>
+    </style>
+</head>
+<body>
+	<div style="display: block; width: 400px; height: 400px;">
+		<canvas id="myChart" width="400" height="400"></canvas>
+	</div>
+    <script>
+          var ctx = document.getElementById("myChart");
+          var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5", "Group 6"],
+                  datasets: [{
+                      label: 'Groups',
+                      data: {{chartData}}
+                  }]
+              }
+          });
+    </script>
+</body>
+</html>

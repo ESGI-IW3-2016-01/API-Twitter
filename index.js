@@ -1,6 +1,27 @@
 require('dotenv').config();
 var Twitter = require('twitter');
 var fs = require('fs');
+var http = require('http'),
+    fs = require('fs'),
+    path = require('path');
+
+var server = http.createServer(function(req, response) {
+
+	fs.readFile('index.html', 'utf-8', function (err, data) {
+        response.writeHead(200, { 'Content-Type': 'text/html' });
+
+        var chartData = [];
+        for (var i = 0; i < 7; i++)
+            chartData.push(Math.random() * 50);
+
+        var result = data.replace('{{chartData}}', JSON.stringify(chartData));
+        response.write(result);
+        response.end();
+    });
+
+});
+
+server.listen(80);
 
 var client = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
