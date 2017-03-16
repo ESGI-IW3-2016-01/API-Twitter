@@ -4,24 +4,31 @@ var fs = require('fs');
 var http = require('http');
 var path = require('path');
 var schedule = require('node-schedule');
+var express = require('express');
+var app = express();
 
 var resTweets;
 var maxId;
 var params;
 
-var server = http.createServer(function (req, response) {
+app.get('/', function (req, res) {
     fs.readFile('index.html', 'utf-8', function (error, data) {
-        response.writeHead(200, {'Content-Type': 'text/html'});
+        res.writeHead(200, {'Content-Type': 'text/html'});
         var pieChartData = [];
         for (var i = 0; i < 3; i++)
             pieChartData.push(Math.random() * 50);
 
         var result = data.replace('{{pieChartData}}', JSON.stringify(pieChartData));
-        response.write(result);
-        response.end();
+        res.write(result);
+        res.end();
     });
 });
-server.listen(8000);
+
+app.get('/api/country', function (req, res) {
+    getCountry(req, res);
+});
+
+app.listen(8000);
 
 var MongoClient = require("mongodb").MongoClient;
 
@@ -44,21 +51,21 @@ schedule.scheduleJob('* */1 * * ', function () {
     wordCount();
 });
 
-function callTwitter(hashtag,collection) {
-	if (maxId) {
-		params = {
-		    q: hashtag,
-		    count: 100,
-		    result_type: 'recent',
-		    since_id: maxId
-		};
-	} else {
-		params = {
-		    q: hashtag,
-		    count: 100,
-		    result_type: 'recent'
-		};
-	}
+function callTwitter(hashtag, collection) {
+    if (maxId) {
+        params = {
+            q: hashtag,
+            count: 100,
+            result_type: 'recent',
+            since_id: maxId
+        };
+    } else {
+        params = {
+            q: hashtag,
+            count: 100,
+            result_type: 'recent'
+        };
+    }
 
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
@@ -79,7 +86,6 @@ function addTweet(elements, collection) {
         }
     });
 }
-
 
 
 function writeFile(fileName, data) {
@@ -106,29 +112,29 @@ var reducer = function (key, values) {
 };
 
 //Aggregation function
-function getCountry() {
-	paris = process.env.MONGO_COL_PARIS;
-	la = process.env.MONGO_COL_LA;
-	MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
-	if (error) throw error;
-
-		var countryTab = db.collection(paris).aggregate([
-		{$group : {
-		    _id : '$lang',
-		    count : {$sum : 1}
-		}},
-		{$sort : {
-		    count : -1
-		}},
-		{$limit : 5}
-		], function (err, countryTab) {
-	        if (err) {
-	            console.log(err);
-	            return;
-            }
-            console.log(countryTab);
+function getCountry(req, res) {
+    paris = process.env.MONGO_COL_PARIS;
+    la = process.env.MONGO_COL_LA;
+    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
+        if (error) throw error;
+        db.collection(paris).aggregate([
+            {
+                $group: {
+                    _id: '$lang',
+                    count: {$sum: 1}
+                }
+            },
+            {
+                $sort: {
+                    count: -1
+                }
+            },
+            {$limit: 5}
+        ], function (err, result) {
+            if (err) console.error(err);
+            res.send(JSON.stringify(result, null, 4));
         });
-	});
+    });
 }
 
 function wordCount() {

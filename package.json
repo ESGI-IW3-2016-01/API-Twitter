@@ -8,7 +8,8 @@
     "dotenv": "^4.0.0",
     "require": "^2.4.20",
     "twitter": "^1.7.0",
-    "node-schedule": "^1.2.1"
+    "node-schedule": "^1.2.1",
+    "express": "^4.15.2"
   },
   "devDependencies": {},
   "scripts": {
