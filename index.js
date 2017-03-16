@@ -17,10 +17,12 @@ var server = http.createServer(function (req, response) {
             pieChartData.push(Math.random() * 50);
 
         var result = data.replace('{{pieChartData}}', JSON.stringify(pieChartData));
+        result += data.replace('{{list}}',JSON.stringify([['foo', 12], ['bar', 6]]));
         response.write(result);
         response.end();
     });
 });
+
 server.listen(8000);
 
 var MongoClient = require("mongodb").MongoClient;
@@ -33,11 +35,11 @@ var client = new Twitter({
 });
 
 callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
-//callTwitter("%23La2024", process.env.MONGO_COL_LA);
+callTwitter("%23La2024", process.env.MONGO_COL_LA);
 
 schedule.scheduleJob('*/1 * * * *', function () {
     callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
-    //callTwitter("%23La2024", process.env.MONGO_COL_LA);
+    callTwitter("%23La2024", process.env.MONGO_COL_LA);
 });
 
 schedule.scheduleJob('* */1 * * *', function () {
@@ -49,7 +51,8 @@ function callTwitter(hashtag,collection) {
 		params = {
 		    q: hashtag,
 		    count: 100,
-		    result_type: 'recent',
+		    result_type: 'recent'
+		    //until:'2017-03-12',
 		    since_id: maxId
 		};
 	} else {
@@ -57,6 +60,7 @@ function callTwitter(hashtag,collection) {
 		    q: hashtag,
 		    count: 100,
 		    result_type: 'recent'
+		    //until:'2017-03-12'
 		};
 	}
 	
