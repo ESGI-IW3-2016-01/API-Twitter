@@ -11,7 +11,7 @@ var server = http.createServer(function(req, response) {
         response.writeHead(200, { 'Content-Type': 'text/html' });
 
         var chartData = [];
-        for (var i = 0; i < 7; i++)
+        for (var i = 0; i < 3; i++)
             chartData.push(Math.random() * 50);
 
         var result = data.replace('{{chartData}}', JSON.stringify(chartData));

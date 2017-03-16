@@ -13,7 +13,36 @@
 	</div>
     <script>
           var ctx = document.getElementById("myChart");
-          var myChart = new Chart(ctx, {
+          var myDoughnutChart = new Chart(ctx, {
+			    type: 'doughnut',
+			    data: {
+				    labels: [
+				        "Red",
+				        "Blue",
+				        "Yellow"
+				    ],
+				    datasets: [
+				        {
+				            data: {{chartData}},
+				            backgroundColor: [
+				                "#FF6384",
+				                "#36A2EB",
+				                "#FFCE56"
+				            ],
+				            hoverBackgroundColor: [
+				                "#FF6384",
+				                "#36A2EB",
+				                "#FFCE56"
+				            ]
+				        }]
+				},
+			    options: {
+			        animation:{
+			            animateScale:true
+			        }
+			    }
+			});
+          /*var myChart = new Chart(ctx, {
               type: 'bar',
               data: {
                   labels: ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5", "Group 6"],
@@ -22,7 +51,7 @@
                       data: {{chartData}}
                   }]
               }
-          });
+          });*/
     </script>
 </body>
 </html>
