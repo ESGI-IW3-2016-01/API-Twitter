@@ -41,9 +41,12 @@ schedule.scheduleJob('*/1 * * * *', function () {
     callTwitter();
 });
 
+schedule.scheduleJob('* */1 * * *', function () {
+    wordCount();
+});
 
 function callTwitter() {
-	console.log(new Date().toLocaleString());
+    console.log(new Date().toLocaleString());
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
         maxId = tweets.search_metadata.max_id;
@@ -72,13 +75,38 @@ function writeFile(fileName, data) {
 }
 
 /*
-db.twitter_search.aggregate([
-{$group : {
-    _id : '$lang',
-    count : {$sum : 1}
-}},
-{$sort : {
-    count : -1
-}},
-{$limit : 5}
-]);*/
+ db.twitter_search.aggregate([
+ {$group : {
+ _id : '$lang',
+ count : {$sum : 1}
+ }},
+ {$sort : {
+ count : -1
+ }},
+ {$limit : 5}
+ ]);*/
+
+var mapper = function () {
+    var text = this.text;
+    text = text.toLowerCase().split(" ");
+    for (var i = text.length - 1; i >= 0; i--) {
+        if (text[i]) emit(text[i], 1);
+    }
+};
+
+var reducer = function (key, values) {
+    var count = 0;
+    values.forEach(function (v) {
+        count += v;
+    });
+    return count;
+};
+
+function wordCount() {
+    paris = process.env.MONGO_COL_PARIS;
+    la = process.env.MONGO_COL_LA;
+    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
+        db.paris.mapReduce(mapper, reducer, {out: 'word_count' + paris});
+        db.la.mapReduce(mapper, reducer, {out: 'word_count' + la});
+    });
+}
