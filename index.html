@@ -11,6 +11,7 @@
 <body>
 	<div style="display: block; width: 400px; height: 400px;">
 		<div class="container">
+			<text id="hidden" style="display:none;"></text>
 			<button id="refresh">Refresh</button>
 		  <h2>Chart.js — Bar Chart Demo</h2>
 		  <div>
@@ -23,15 +24,34 @@
     	var ctx = document.getElementById("myChart").getContext('2d');
 
 		$('#refresh').on('click', function(){
+
+			 var resultLA = $.getJSON({
+		        url: '/api/country/la',
+		        success: function (data) {		        	
+		        },
+		        error: function() {
+		            console.log("Désolé, aucun résultat trouvé.");
+		        }
+
+		    });
+
 		    $.getJSON({
-		        url: '/api/country',
+		        url: '/api/country/paris',
 		        success: function (data) {
 		        	var lang = [];
 		        	var countParis = [];
+		        	var countLA = [];
+		        	var tabLA = resultLA.responseJSON ;
+
 		        	for(i = 0; i < data.length; i++){
 		        		countParis.push(data[i].count);
 		        		lang.push(data[i]._id);
 		        	}
+
+		        	for(i = 0; i < tabLA.length; i++){
+		        		countLA.push(tabLA[i].count);
+		        	}
+
 		        	
 					var myChart = new Chart(ctx, {
 					  type: 'bar',
@@ -42,8 +62,8 @@
 					      data: countParis,
 					      backgroundColor: "rgba(153,255,51,1)"
 					    }, {
-					      label: 'oranges',
-					      data: [30, 29, 5, 5, 20, 3, 10],
+					      label: 'Los Angeles',
+					      data: countLA,
 					      backgroundColor: "rgba(255,153,0,1)"
 					    }]
 						}
