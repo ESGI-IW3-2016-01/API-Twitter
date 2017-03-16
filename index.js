@@ -36,16 +36,17 @@ var client = new Twitter({
     access_token_secret: process.env.TWITTER_TOKEN_SECRET
 });
 
-callTwitter("%23Paris2024",process.env.MONGO_COL_PARIS);
-callTwitter("%23La2024",process.env.MONGO_COL_LA);
+callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
+callTwitter("%23La2024", process.env.MONGO_COL_LA);
 schedule.scheduleJob('*/1 * * * *', function () {
-    callTwitter("%23Paris2024",process.env.MONGO_COL_PARIS);
-    callTwitter("%23La2024",process.env.MONGO_COL_LA);
+    callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
+    callTwitter("%23La2024", process.env.MONGO_COL_LA);
 });
 
 schedule.scheduleJob('* */1 * * *', function () {
     wordCount();
 });
+
 
 function callTwitter(hashtag,collection) {
 	var params = {
@@ -61,11 +62,11 @@ function callTwitter(hashtag,collection) {
         maxId = tweets.search_metadata.max_id;
         params.since_id = maxId;
         writeFile('tweets.json', tweets.statuses);
-        addTweet(tweets.statuses,collection);
+        addTweet(tweets.statuses, collection);
     });
 }
 
-function addTweet(elements,collection) {
+function addTweet(elements, collection) {
     MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
         if (error) throw error;
         for (var i = 0; i < elements.length; i++) {
@@ -124,7 +125,8 @@ function wordCount() {
     paris = process.env.MONGO_COL_PARIS;
     la = process.env.MONGO_COL_LA;
     MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
-        db.collection(paris).mapReduce(mapper, reducer, {out: 'word_count_' + paris});
-        db.collection(la).mapReduce(mapper, reducer, {out: 'word_count_' + la});
+        db.collection(paris).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + paris}});
+        db.collection(la).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + la}});
+        console.log(new Date().toLocaleString() + ' word counted');
     });
 }
