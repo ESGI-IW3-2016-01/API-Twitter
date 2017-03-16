@@ -36,12 +36,19 @@ var client = new Twitter({
     access_token_secret: process.env.TWITTER_TOKEN_SECRET
 });
 
+var params = {
+    q: "%23JO2024",
+    count: 100
+};
+
+callTwitter();
 schedule.scheduleJob('*/1 * * * *', function () {
-    console.log('tic');
     callTwitter();
 });
 
+
 function callTwitter() {
+	console.log(new Date().toLocaleString());
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
         maxId = tweets.search_metadata.max_id;
@@ -52,10 +59,10 @@ function callTwitter() {
 }
 
 function addTweet(elements) {
-    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_COL, function (error, db) {
+    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
         if (error) throw error;
         for (var i = 0; i < elements.length; i++) {
-            db.collection("tweet").insert(elements[i], null, function (error, results) {
+            db.collection(process.env.MONGO_COL).insert(elements[i], null, function (error, results) {
                 if (error) throw error;
             });
         }
