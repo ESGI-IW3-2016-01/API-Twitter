@@ -9,39 +9,30 @@
 </head>
 <body>
 	<div style="display: block; width: 400px; height: 400px;">
-		<canvas id="myChart" width="400" height="400"></canvas>
+		<div class="container">
+		  <h2>Chart.js — Bar Chart Demo</h2>
+		  <div>
+		    <canvas id="myChart"></canvas>
+		  </div>
+		</div>
 	</div>
     <script>
-          var ctx = document.getElementById("myChart");
-          var myDoughnutChart = new Chart(ctx, {
-			    type: 'doughnut',
-			    data: {
-				    labels: [
-				        "Red",
-				        "Blue",
-				        "Yellow"
-				    ],
-				    datasets: [
-				        {
-				            data: {{pieChartData}},
-				            backgroundColor: [
-				                "#FF6384",
-				                "#36A2EB",
-				                "#FFCE56"
-				            ],
-				            hoverBackgroundColor: [
-				                "#FF6384",
-				                "#36A2EB",
-				                "#FFCE56"
-				            ]
-				        }]
-				},
-			    options: {
-			        animation:{
-			            animateScale:true
-			        }
-			    }
-			});
+    	var ctx = document.getElementById("myChart").getContext('2d');
+		var myChart = new Chart(ctx, {
+		  type: 'bar',
+		  data: {
+		    labels: ["M", "T", "W", "T", "F", "S", "S"],
+		    datasets: [{
+		      label: 'apples',
+		      data: [12, 19, 3, 17, 28, 24, 7],
+		      backgroundColor: "rgba(153,255,51,1)"
+		    }, {
+		      label: 'oranges',
+		      data: [30, 29, 5, 5, 20, 3, 10],
+		      backgroundColor: "rgba(255,153,0,1)"
+		    }]
+			}
+		});
           /*var myChart = new Chart(ctx, {
               type: 'bar',
               data: {
@@ -53,5 +44,12 @@
               }
           });*/
     </script>
+    <style type="text/css">
+
+		.container {
+		  width: 80%;
+		  margin: 15px auto;
+		}
+	</style>
 </body>
 </html>
