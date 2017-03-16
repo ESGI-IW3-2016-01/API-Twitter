@@ -5,7 +5,7 @@ var http = require('http');
 var path = require('path');
 
 var params = {
-    q: "%23ASMMCI",
+    q: "%23JO2024",
     count: 100
 };
 var resTweets;
@@ -13,11 +13,11 @@ var resTweets;
 var server = http.createServer(function (req, response) {
     fs.readFile('index.html', 'utf-8', function (error, data) {
         response.writeHead(200, {'Content-Type': 'text/html'});
-        var chartData = [];
+        var pieChartData = [];
         for (var i = 0; i < 3; i++)
-            chartData.push(Math.random() * 50);
+            pieChartData.push(Math.random() * 50);
 
-        var result = data.replace('{{chartData}}', JSON.stringify(chartData));
+        var result = data.replace('{{pieChartData}}', JSON.stringify(pieChartData));
         response.write(result);
         response.end();
     });
@@ -48,6 +48,19 @@ client.get('search/tweets.json', params, function (error, tweets, response) {
 function addTweet(elements) {
     MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_COL, function (error, db) {
         if (error) throw error;
+        for (var i = 0; i < elements.length; i++) {
+            db.collection("tweet").insert(elements[i], null, function (error, results) {
+                if (error) throw error;
+            });
+        }
+    });
+}
+
+
+function getCountry(elements) {
+    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_COL, function (error, db) {
+        if (error) throw error;
+        db.collection("tweet").find().sort({lang});
         for (var i = 0; i < elements.length; i++) {
             db.collection("tweet").insert(elements[i], null, function (error, results) {
                 if (error) throw error;
