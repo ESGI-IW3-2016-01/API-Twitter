@@ -5,13 +5,9 @@ var http = require('http');
 var path = require('path');
 var schedule = require('node-schedule');
 
-var params = {
-    q: "%23JO2024",
-    count: 100,
-    result_type: 'recent'
-};
 var resTweets;
 var maxId;
+var params;
 
 var server = http.createServer(function (req, response) {
     fs.readFile('index.html', 'utf-8', function (error, data) {
@@ -37,29 +33,39 @@ var client = new Twitter({
 });
 
 callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
-callTwitter("%23La2024", process.env.MONGO_COL_LA);
+//callTwitter("%23La2024", process.env.MONGO_COL_LA);
+
 schedule.scheduleJob('*/1 * * * *', function () {
     callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
-    callTwitter("%23La2024", process.env.MONGO_COL_LA);
+    //callTwitter("%23La2024", process.env.MONGO_COL_LA);
 });
 
 schedule.scheduleJob('* */1 * * *', function () {
     wordCount();
 });
 
-
 function callTwitter(hashtag,collection) {
-	var params = {
-    q: hashtag,
-    count: 100,
-    result_type: 'recent'
-	};
+	if (maxId) {
+		params = {
+		    q: hashtag,
+		    count: 100,
+		    result_type: 'recent',
+		    since_id: maxId
+		};
+	} else {
+		params = {
+		    q: hashtag,
+		    count: 100,
+		    result_type: 'recent'
+		};
+	}
+	
+	//getCountry();
 
     console.log(new Date().toLocaleString() + " " + hashtag);
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
         maxId = tweets.search_metadata.max_id;
-        params.since_id = maxId;
         writeFile('tweets.json', tweets.statuses);
         addTweet(tweets.statuses, collection);
     });
