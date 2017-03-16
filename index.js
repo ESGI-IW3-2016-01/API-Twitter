@@ -7,31 +7,36 @@ var schedule = require('node-schedule');
 var express = require('express');
 var app = express();
 
-var resTweets;
-var maxId;
-var params;
-
 app.get('/', function (req, res) {
-    fs.readFile('index.html', 'utf-8', function (error, data) {
-        res.writeHead(200, {'Content-Type': 'text/html'});
-        var pieChartData = [];
-        for (var i = 0; i < 3; i++)
-            pieChartData.push(Math.random() * 50);
-
-        var result = data.replace('{{pieChartData}}', JSON.stringify(pieChartData));
-        res.write(result);
-        res.end();
-    });
+    // fs.readFile('index.html', 'utf-8', function (error, data) {
+    //     res.writeHead(200, {'Content-Type': 'text/html'});
+    //     var pieChartData = [];
+    //     for (var i = 0; i < 3; i++)
+    //         pieChartData.push(Math.random() * 50);
+    //
+    //     var result = data.replace('{{pieChartData}}', JSON.stringify(pieChartData));
+    //     res.write(result);
+    //     res.end();
+    // });
+    res.sendfile('index.html', 'utf-8');
 });
 
-app.get('/api/country', function (req, res) {
-    getCountry(req, res);
+app.get('/api/country/:city', function (req, res) {
+    res.setHeader('Content-Type', 'application/json;charset=utf-8');
+    getCountry(req, res, req.params.city);
 });
 
 app.listen(8000);
 
+var params = {
+    count: 100,
+    result_type: 'recent'
+    //until:'2017-03-12'
+};
+// MongoDB client
 var MongoClient = require("mongodb").MongoClient;
 
+// Twitter API client
 var client = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
@@ -51,33 +56,26 @@ schedule.scheduleJob('* */1 * * ', function () {
     wordCount();
 });
 
-function callTwitter(hashtag,collection) {
-	if (maxId) {
-		params = {
-		    q: hashtag,
-		    count: 100,
-		    result_type: 'recent',
-		    //until:'2017-03-12',
-		    since_id: maxId
-		};
-	} else {
-		params = {
-		    q: hashtag,
-		    count: 100,
-		    result_type: 'recent'
-		    //until:'2017-03-12'
-		};
-	}
-
+/**
+ * Twitter API search call
+ * @param hashtag
+ * @param collection
+ */
+function callTwitter(hashtag, collection) {
+    params.q = hashtag;
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
         maxId = tweets.search_metadata.max_id;
-        // writeFile('tweets.json', tweets.statuses);
+        params.since_id = maxId;
         addTweet(tweets.statuses, collection);
         console.log(new Date().toLocaleString() + " " + hashtag + " (" + tweets.statuses.length + ")");
     });
 }
-
+/**
+ * Save raw tweet in database
+ * @param elements
+ * @param collection
+ */
 function addTweet(elements, collection) {
     MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
         if (error) throw error;
@@ -89,8 +87,11 @@ function addTweet(elements, collection) {
     });
 }
 
-
-
+/**
+ * Write tweets in a file
+ * @param fileName
+ * @param data
+ */
 function writeFile(fileName, data) {
     if (!fileName) fileName = 'tweets.json';
     fs.writeFile(fileName, JSON.stringify(data, null, 4), function (err) {
@@ -98,6 +99,9 @@ function writeFile(fileName, data) {
     });
 }
 
+/**
+ * Map function for mapReduce
+ */
 var mapper = function () {
     var text = this.text;
     text = text.toLowerCase().split(" ");
@@ -106,6 +110,12 @@ var mapper = function () {
     }
 };
 
+/**
+ * Reduce function for mapReduce
+ * @param key
+ * @param values
+ * @returns {number}
+ */
 var reducer = function (key, values) {
     var count = 0;
     values.forEach(function (v) {
@@ -114,13 +124,29 @@ var reducer = function (key, values) {
     return count;
 };
 
-//Aggregation function
-function getCountry(req, res) {
+/**
+ * Word Count in collections using mapReduce
+ */
+function wordCount() {
     paris = process.env.MONGO_COL_PARIS;
     la = process.env.MONGO_COL_LA;
     MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
+        db.collection(paris).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + paris}});
+        db.collection(la).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + la}});
+        console.log(new Date().toLocaleString() + ' word counted');
+    });
+}
+
+/**
+ * Aggregate tweets by language
+ * @param req
+ * @param res
+ * @param city
+ */
+function getCountry(req, res, city) {
+    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
         if (error) throw error;
-        db.collection(paris).aggregate([
+        db.collection(city).aggregate([
             {
                 $group: {
                     _id: '$lang',
@@ -137,15 +163,5 @@ function getCountry(req, res) {
             if (err) console.error(err);
             res.send(JSON.stringify(result, null, 4));
         });
-    });
-}
-
-function wordCount() {
-    paris = process.env.MONGO_COL_PARIS;
-    la = process.env.MONGO_COL_LA;
-    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
-        db.collection(paris).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + paris}});
-        db.collection(la).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + la}});
-        console.log(new Date().toLocaleString() + ' word counted');
     });
 }
