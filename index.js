@@ -5,12 +5,6 @@ var http = require('http');
 var path = require('path');
 var schedule = require('node-schedule');
 
-var params = {
-    q: "%23JO2024",
-    count: 100,
-    result_type: 'recent'
-};
-var resTweets;
 var maxId;
 
 var server = http.createServer(function (req, response) {
@@ -36,28 +30,36 @@ var client = new Twitter({
     access_token_secret: process.env.TWITTER_TOKEN_SECRET
 });
 
-callTwitter();
+callTwitter("%23Paris2024",process.env.MONGO_COL_PARIS);
+callTwitter("%23La2024",process.env.MONGO_COL_LA);
 schedule.scheduleJob('*/1 * * * *', function () {
-    callTwitter();
+    callTwitter("%23Paris2024",process.env.MONGO_COL_PARIS);
+    callTwitter("%23La2024",process.env.MONGO_COL_LA);
 });
 
 
-function callTwitter() {
-	console.log(new Date().toLocaleString());
+function callTwitter(hashtag,collection) {
+	var params = {
+    q: hashtag,
+    count: 100,
+    result_type: 'recent'
+	};
+
+	console.log(new Date().toLocaleString() + " " + hashtag);
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
         maxId = tweets.search_metadata.max_id;
         params.since_id = maxId;
         writeFile('tweets.json', tweets.statuses);
-        addTweet(tweets.statuses);
+        addTweet(tweets.statuses,collection);
     });
 }
 
-function addTweet(elements) {
+function addTweet(elements,collection) {
     MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
         if (error) throw error;
         for (var i = 0; i < elements.length; i++) {
-            db.collection(process.env.MONGO_COL).insert(elements[i], null, function (error, results) {
+            db.collection(collection).insert(elements[i], null, function (error, results) {
                 if (error) throw error;
             });
         }
