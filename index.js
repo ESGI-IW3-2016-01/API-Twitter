@@ -114,7 +114,7 @@ function wordCount() {
     paris = process.env.MONGO_COL_PARIS;
     la = process.env.MONGO_COL_LA;
     MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
-        db.paris.mapReduce(mapper, reducer, {out: 'word_count' + paris});
-        db.la.mapReduce(mapper, reducer, {out: 'word_count' + la});
+        db.collection(paris).mapReduce(mapper, reducer, {out: 'word_count_' + paris});
+        db.collection(la).mapReduce(mapper, reducer, {out: 'word_count_' + la});
     });
 }
