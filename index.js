@@ -37,7 +37,7 @@ var client = new Twitter({
 callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
 callTwitter("%23La2024", process.env.MONGO_COL_LA);
 
-schedule.scheduleJob('*/1 * * * *', function () {
+schedule.scheduleJob('* */1 * * *', function () {
     callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
     callTwitter("%23La2024", process.env.MONGO_COL_LA);
 });
@@ -51,7 +51,7 @@ function callTwitter(hashtag,collection) {
 		params = {
 		    q: hashtag,
 		    count: 100,
-		    result_type: 'recent'
+		    result_type: 'recent',
 		    //until:'2017-03-12',
 		    since_id: maxId
 		};
