@@ -6,7 +6,7 @@ var path = require('path');
 var schedule = require('node-schedule');
 
 var params = {
-    q: "%23ASMMCI",
+    q: "%23JO2024",
     count: 100,
     result_type: 'recent'
 };
@@ -35,11 +35,6 @@ var client = new Twitter({
     access_token_key: process.env.TWITTER_ACCESS_TOKEN,
     access_token_secret: process.env.TWITTER_TOKEN_SECRET
 });
-
-var params = {
-    q: "%23JO2024",
-    count: 100
-};
 
 callTwitter();
 schedule.scheduleJob('*/1 * * * *', function () {
@@ -75,3 +70,15 @@ function writeFile(fileName, data) {
         if (err) throw err;
     });
 }
+
+/*
+db.twitter_search.aggregate([
+{$group : {
+    _id : '$lang',
+    count : {$sum : 1}
+}},
+{$sort : {
+    count : -1
+}},
+{$limit : 5}
+]);*/
