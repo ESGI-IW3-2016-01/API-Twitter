@@ -42,7 +42,7 @@ schedule.scheduleJob('*/1 * * * *', function () {
     callTwitter("%23La2024", process.env.MONGO_COL_LA);
 });
 
-schedule.scheduleJob('* */1 * * *', function () {
+schedule.scheduleJob('* */1 * * ', function () {
     wordCount();
 });
 
@@ -63,15 +63,13 @@ function callTwitter(hashtag,collection) {
 		    //until:'2017-03-12'
 		};
 	}
-	
-	//getCountry();
 
-    console.log(new Date().toLocaleString() + " " + hashtag);
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
         maxId = tweets.search_metadata.max_id;
-        writeFile('tweets.json', tweets.statuses);
+        // writeFile('tweets.json', tweets.statuses);
         addTweet(tweets.statuses, collection);
+        console.log(new Date().toLocaleString() + " " + hashtag + " (" + tweets.statuses.length + ")");
     });
 }
 
@@ -87,25 +85,6 @@ function addTweet(elements, collection) {
 }
 
 
-function getCountry() {
-	paris = process.env.MONGO_COL_PARIS;
-    la = process.env.MONGO_COL_LA;
-
-    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_COL, function (error, db) {
-        if (error) throw error;
-       	var countryTab = db.collection(paris).aggregate([
-			{$group : {
-			    _id : '$lang',
-			    count : {$sum : 1}
-			}},
-			{$sort : {
-			    count : -1
-			}},
-			{$limit : 5}
-			]);
-       	console.log(countryTab);
-    });
-}
 
 function writeFile(fileName, data) {
     if (!fileName) fileName = 'tweets.json';
@@ -129,6 +108,32 @@ var reducer = function (key, values) {
     });
     return count;
 };
+
+//Aggregation function
+function getCountry() {
+	paris = process.env.MONGO_COL_PARIS;
+	la = process.env.MONGO_COL_LA;
+	MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
+	if (error) throw error;
+
+		var countryTab = db.collection(paris).aggregate([
+		{$group : {
+		    _id : '$lang',
+		    count : {$sum : 1}
+		}},
+		{$sort : {
+		    count : -1
+		}},
+		{$limit : 5}
+		], function (err, countryTab) {
+	        if (err) {
+	            console.log(err);
+	            return;
+            }
+            console.log(countryTab);
+        });
+	});
+}
 
 function wordCount() {
     paris = process.env.MONGO_COL_PARIS;
