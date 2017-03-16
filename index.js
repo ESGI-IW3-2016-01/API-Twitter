@@ -42,7 +42,7 @@ var client = new Twitter({
 callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
 callTwitter("%23La2024", process.env.MONGO_COL_LA);
 
-schedule.scheduleJob('*/1 * * * *', function () {
+schedule.scheduleJob('* */1 * * *', function () {
     callTwitter("%23Paris2024", process.env.MONGO_COL_PARIS);
     callTwitter("%23La2024", process.env.MONGO_COL_LA);
 });
@@ -51,21 +51,23 @@ schedule.scheduleJob('* */1 * * ', function () {
     wordCount();
 });
 
-function callTwitter(hashtag, collection) {
-    if (maxId) {
-        params = {
-            q: hashtag,
-            count: 100,
-            result_type: 'recent',
-            since_id: maxId
-        };
-    } else {
-        params = {
-            q: hashtag,
-            count: 100,
-            result_type: 'recent'
-        };
-    }
+function callTwitter(hashtag,collection) {
+	if (maxId) {
+		params = {
+		    q: hashtag,
+		    count: 100,
+		    result_type: 'recent',
+		    //until:'2017-03-12',
+		    since_id: maxId
+		};
+	} else {
+		params = {
+		    q: hashtag,
+		    count: 100,
+		    result_type: 'recent'
+		    //until:'2017-03-12'
+		};
+	}
 
     client.get('search/tweets.json', params, function (error, tweets, response) {
         if (error) console.error(error);
@@ -86,6 +88,7 @@ function addTweet(elements, collection) {
         }
     });
 }
+
 
 
 function writeFile(fileName, data) {
