@@ -109,7 +109,7 @@ var reducer = function (key, values) {
 function getCountry() {
 	paris = process.env.MONGO_COL_PARIS;
 	la = process.env.MONGO_COL_LA;
-	MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_COL, function (error, db) {
+	MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
 	if (error) throw error;
 
 		var countryTab = db.collection(paris).aggregate([
@@ -125,8 +125,9 @@ function getCountry() {
 	        if (err) {
 	            console.log(err);
 	            return;
-	        }
-	    });
+            }
+            console.log(countryTab);
+        });
 	});
 }
 
