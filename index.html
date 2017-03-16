@@ -4,12 +4,14 @@
     <title></title>
     <meta charset="utf-8" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <style>
     </style>
 </head>
 <body>
 	<div style="display: block; width: 400px; height: 400px;">
 		<div class="container">
+			<button id="refresh">Refresh</button>
 		  <h2>Chart.js — Bar Chart Demo</h2>
 		  <div>
 		    <canvas id="myChart"></canvas>
@@ -17,22 +19,45 @@
 		</div>
 	</div>
     <script>
+
     	var ctx = document.getElementById("myChart").getContext('2d');
-		var myChart = new Chart(ctx, {
-		  type: 'bar',
-		  data: {
-		    labels: ["M", "T", "W", "T", "F", "S", "S"],
-		    datasets: [{
-		      label: 'apples',
-		      data: [12, 19, 3, 17, 28, 24, 7],
-		      backgroundColor: "rgba(153,255,51,1)"
-		    }, {
-		      label: 'oranges',
-		      data: [30, 29, 5, 5, 20, 3, 10],
-		      backgroundColor: "rgba(255,153,0,1)"
-		    }]
-			}
+
+		$('#refresh').on('click', function(){
+		    $.getJSON({
+		        url: '/api/country',
+		        success: function (data) {
+		        	var lang = [];
+		        	var countParis = [];
+		        	for(i = 0; i < data.length; i++){
+		        		countParis.push(data[i].count);
+		        		lang.push(data[i]._id);
+		        	}
+		        	
+					var myChart = new Chart(ctx, {
+					  type: 'bar',
+					  data: {
+					    labels: lang,
+					    datasets: [{
+					      label: 'Paris',
+					      data: countParis,
+					      backgroundColor: "rgba(153,255,51,1)"
+					    }, {
+					      label: 'oranges',
+					      data: [30, 29, 5, 5, 20, 3, 10],
+					      backgroundColor: "rgba(255,153,0,1)"
+					    }]
+						}
+					});
+		        	
+		        },
+		        error: function() {
+		            console.log("Désolé, aucun résultat trouvé.");
+		        }
+
+		    });
+
 		});
+
           /*var myChart = new Chart(ctx, {
               type: 'bar',
               data: {
