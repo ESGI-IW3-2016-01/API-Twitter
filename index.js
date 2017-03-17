@@ -7,6 +7,8 @@ var schedule = require('node-schedule');
 var express = require('express');
 var app = express();
 
+app.use(express.static('d3-wordcloud-master'));
+
 app.get('/', function (req, res) {
     // fs.readFile('index.html', 'utf-8', function (error, data) {
     //     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -19,6 +21,11 @@ app.get('/', function (req, res) {
     //     res.end();
     // });
     res.sendfile('index.html', 'utf-8');
+});
+
+app.get('/api/country/:city', function (req, res) {
+    res.setHeader('Content-Type', 'application/json;charset=utf-8');
+    getCountry(req, res, req.params.city);
 });
 
 app.get('/api/country/:city', function (req, res) {
@@ -94,46 +101,8 @@ function addTweet(elements, collection) {
  */
 function writeFile(fileName, data) {
     if (!fileName) fileName = 'tweets.json';
-    fs.writeFile(fileName, JSON.stringify(data, null, 4), function (err) {
+    fs.writeFile(fileName, JSON.stringify(data), function (err) {
         if (err) throw err;
-    });
-}
-
-/**
- * Map function for mapReduce
- */
-var mapper = function () {
-    var text = this.text;
-    text = text.toLowerCase().split(" ");
-    for (var i = text.length - 1; i >= 0; i--) {
-        if (text[i]) emit(text[i], 1);
-    }
-};
-
-/**
- * Reduce function for mapReduce
- * @param key
- * @param values
- * @returns {number}
- */
-var reducer = function (key, values) {
-    var count = 0;
-    values.forEach(function (v) {
-        count += v;
-    });
-    return count;
-};
-
-/**
- * Word Count in collections using mapReduce
- */
-function wordCount() {
-    paris = process.env.MONGO_COL_PARIS;
-    la = process.env.MONGO_COL_LA;
-    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
-        db.collection(paris).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + paris}});
-        db.collection(la).mapReduce(mapper, reducer, {out: {replace: 'word_count_' + la}});
-        console.log(new Date().toLocaleString() + ' word counted');
     });
 }
 
@@ -162,6 +131,31 @@ function getCountry(req, res, city) {
         ], function (err, result) {
             if (err) console.error(err);
             res.send(JSON.stringify(result, null, 4));
+        });
+    });
+}
+
+function groupByDate(req, res, city) {
+    MongoClient.connect('mongodb://' + process.env.MONGO_HOST + ':' + process.env.MONGO_PORT + '/' + process.env.MONGO_DB, function (error, db) {
+        if (error) throw error;
+        db.collection(city).aggregate([
+            {
+                $group: {
+                    _id: '$created_at',
+                    count: {$sum: 1},
+                    name: "test"
+                }
+            },
+            {
+                $sort: {
+                    count: -1
+                }
+            },
+            {$limit: 5}
+        ], function (err, result) {
+            if (err) console.error(err);
+            res.send(JSON.stringify(result, null, 4));
+            console.log(JSON.stringify(result, null, 4));
         });
     });
 }
